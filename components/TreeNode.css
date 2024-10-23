@@ -1,0 +1,43 @@
+.node__root .text {
+  color: rgb(255, 255, 255);
+}
+
+.node__leaf .text {
+  color: white;
+}
+.node__branch .text {
+  color: white;
+}
+
+.rd3t-label__title {
+  fill: white !important;
+  color: white !important;
+}
+
+circle {
+  stroke: white;
+  stroke-width: 2;
+}
+
+.node__root > circle {
+  fill: red;
+  /* color: white; */
+  /* r:40; */
+}
+
+.node__branch > circle {
+  fill: yellow;
+  /* r:20 */
+}
+
+.node__leaf > circle {
+  fill: green;
+  /* Let's also make the radius of leaf nodes larger */
+  /* r: 10; */
+}
+
+/* .rd3t-tree-container{
+  display: flex;
+  justify-items: center;
+  align-items: center;
+} */
