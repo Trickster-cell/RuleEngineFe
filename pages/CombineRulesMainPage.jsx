@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { RuleContext } from "../context/rules";
 import { toast } from "react-toastify";
+import Loading from "../components/Loading";
 
 const data = [];
 
@@ -11,19 +12,27 @@ const CombineRulesMainPage = () => {
     navigate(-1);
   };
 
+  const [loading, setLoading] = useState(true);
+
   const [ruleData, setRuleData] = useState(data);
 
   const { ruleId, ruleName, setRuleId, setRuleString, setRuleName } =
     useContext(RuleContext);
+    const host = import.meta.env.VITE_SERVER_URL || "https://ruleenginebackend-9sxx.onrender.com";
+  
 
   const fetchRules = async () => {
+    setLoading(true);
     try {
-      const response = await fetch("https://ruleenginebackend-9sxx.onrender.com/rule/allRules", {
-        method: "GET", // Use GET method
-        headers: {
-          Accept: "application/json", // Set the Accept header
-        },
-      });
+      const response = await fetch(
+        `${host}/rule/allRules`,
+        {
+          method: "GET", // Use GET method
+          headers: {
+            Accept: "application/json", // Set the Accept header
+          },
+        }
+      );
       console.log(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -33,6 +42,8 @@ const CombineRulesMainPage = () => {
       setRuleData(data.nodes);
     } catch (error) {
       console.log("Some Error occured", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,14 +124,17 @@ const CombineRulesMainPage = () => {
 
     try {
       //   console.log(ruleData);
-      const response = await fetch("https://ruleenginebackend-9sxx.onrender.com/rule/combine-rule", {
-        method: "POST", // Use POST method
-        headers: {
-          "Content-Type": "application/json", // Specify the content type
-          Accept: "application/json", // Set the Accept header
-        },
-        body: JSON.stringify(ruleData2),
-      });
+      const response = await fetch(
+        `${host}/rule/combine-rule`,
+        {
+          method: "POST", // Use POST method
+          headers: {
+            "Content-Type": "application/json", // Specify the content type
+            Accept: "application/json", // Set the Accept header
+          },
+          body: JSON.stringify(ruleData2),
+        }
+      );
       console.log(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -135,6 +149,10 @@ const CombineRulesMainPage = () => {
       toast.error("Some error occured");
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div>

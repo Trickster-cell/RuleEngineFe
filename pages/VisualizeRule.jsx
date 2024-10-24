@@ -2,22 +2,28 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import OrgChartTree from "../components/TreeNode";
 import { RuleContext } from "../context/rules";
+import Loading from "../components/Loading";
 
 const VisualizeRule = () => {
   const { id } = useParams();
 
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true);
+
   const goBack = () => {
     navigate(-1);
   };
 
   const [nodeData, setNodeData] = useState({});
+  const host = import.meta.env.VITE_SERVER_URL || "https://ruleenginebackend-9sxx.onrender.com";
+
 
   const fetchRuleData = async () => {
+    setLoading(true);
     try {
       const response = await fetch(
-        `https://ruleenginebackend-9sxx.onrender.com/rule/json?idx=${id}`,
+        `${host}/rule/json?idx=${id}`,
         {
           method: "GET", // Use GET method
           headers: {
@@ -35,6 +41,8 @@ const VisualizeRule = () => {
       setNodeData(data);
     } catch (error) {
       console.log("Some Error occured", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,6 +62,10 @@ const VisualizeRule = () => {
     setRuleString,
     setRuleName,
   } = useContext(RuleContext);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <>

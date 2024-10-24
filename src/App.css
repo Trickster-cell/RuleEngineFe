@@ -29,6 +29,26 @@ body {
   align-items: center;
 }
 
+body.modal-open {
+  overflow: hidden; /* Prevent scrolling when modal is open */
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(5px); /* Apply blur effect */
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: darken background */
+  z-index: 49; /* Lower than modal */
+  display: none; /* Hide by default */
+}
+
+.modal-overlay.visible {
+  display: block; /* Show overlay when modal is open */
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

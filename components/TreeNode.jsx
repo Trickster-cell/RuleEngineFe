@@ -332,7 +332,7 @@ export default function OrgChartTree({ dataP = dummyData }) {
         rootNodeClassName="node__root"
         branchNodeClassName="node__branch"
         leafNodeClassName="node__leaf"
-        pathFunc={"straight"}
+        pathFunc={"diagonal"}
       />
     </div>
   );

@@ -120,6 +120,8 @@ const FileInput = ({ setJsonContent }) => {
 const EvaluateData = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const host = import.meta.env.VITE_SERVER_URL || "https://ruleenginebackend-9sxx.onrender.com";
+
 
   const {
     ruleString,
@@ -173,7 +175,7 @@ const EvaluateData = () => {
     try {
       console.log(jsonContent);
       const response = await fetch(
-        `https://ruleenginebackend-9sxx.onrender.com/rule/evaluate?idx=${id}`,
+        `${host}/rule/evaluate?idx=${id}`,
         {
           method: "POST", // Use POST method
           headers: {

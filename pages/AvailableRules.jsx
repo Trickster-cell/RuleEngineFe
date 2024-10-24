@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { RuleContext } from "../context/rules";
-
-const data = [];
+import Loading from "../components/Loading"; // Import your Loading component
 
 const AvailableRules = () => {
   const navigate = useNavigate();
@@ -10,28 +9,33 @@ const AvailableRules = () => {
     navigate(-1);
   };
 
-  const [ruleData, setRuleData] = useState(data);
+  const [ruleData, setRuleData] = useState([]);
+  const [loading, setLoading] = useState(true); // State to manage loading
 
-  const { ruleId, ruleName, setRuleId, setRuleString, setRuleName } =
-    useContext(RuleContext);
+  const { setRuleId, setRuleName, setRuleString } = useContext(RuleContext);
+
+  const host = import.meta.env.VITE_SERVER_URL || "https://ruleenginebackend-9sxx.onrender.com";
+
+  console.log(import.meta.env.VITE_SERVER_URL);
 
   const fetchRules = async () => {
+    setLoading(true); // Set loading to true before fetching data
     try {
-      const response = await fetch("https://ruleenginebackend-9sxx.onrender.com/rule/allRules", {
-        method: "GET", // Use GET method
+      const response = await fetch(`${host}/rule/allRules`, {
+        method: "GET",
         headers: {
-          Accept: "application/json", // Set the Accept header
+          Accept: "application/json",
         },
       });
-      console.log(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json(); // Parse JSON response
-      console.log(data);
+      const data = await response.json();
       setRuleData(data.nodes);
     } catch (error) {
-      console.log("Some Error occured", error);
+      console.log("Some Error occurred", error);
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
 
@@ -45,12 +49,17 @@ const AvailableRules = () => {
     setRuleString(rule.finalString);
     navigate(`/visualize/${rule._id}`);
   };
+
   const handleClick2 = (rule) => {
     setRuleId(rule._id);
     setRuleName(rule.name);
     setRuleString(rule.finalString);
     navigate(`/evaluate/${rule._id}`);
   };
+
+  if (loading) {
+    return <Loading />; // Render the Loading component while fetching data
+  }
 
   return (
     <div>
@@ -61,67 +70,56 @@ const AvailableRules = () => {
       >
         Back
       </button>
-      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <label
-          for="table-avail"
-          class="block mb-2 text-xl font-medium text-gray-900 dark:text-white"
+          htmlFor="table-avail"
+          className="block mb-2 text-xl font-medium text-gray-900 dark:text-white"
         >
           Available Rules
         </label>
         <table
           id="table-avail"
-          class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+          className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
         >
-          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" class="px-6 py-3">
-                Rule Name
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Rule ID
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Visualize
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Evaluate Data
-              </th>
+              <th scope="col" className="px-6 py-3">Rule Name</th>
+              <th scope="col" className="px-6 py-3">Rule ID</th>
+              <th scope="col" className="px-6 py-3">Visualize</th>
+              <th scope="col" className="px-6 py-3">Evaluate Data</th>
             </tr>
           </thead>
           <tbody>
-            {ruleData?.map((rule) => {
-              return (
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                  <th
-                    scope="row"
-                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+            {ruleData.map((rule) => (
+              <tr key={rule._id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <th
+                  scope="row"
+                  className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                >
+                  {rule.name}
+                </th>
+                <td className="px-6 py-4">{rule._id}</td>
+                <td className="px-6 py-4">
+                  <p
+                    onClick={() => handleClick(rule)}
+                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                   >
-                    {rule.name}
-                  </th>
-                  <td class="px-6 py-4">{rule._id}</td>
-                  <td class="px-6 py-4">
-                    <p
-                      onClick={() => handleClick(rule)}
-                      class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Visualize
-                    </p>
-                  </td>
-                  <td class="px-6 py-4">
-                    <p
-                      href={`evaluate/${rule._id}`}
-                      class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleClick2(rule);
-                      }}
-                    >
-                      Evaluate
-                    </p>
-                  </td>
-                </tr>
-              );
-            })}
+                    Visualize
+                  </p>
+                </td>
+                <td className="px-6 py-4">
+                  <p
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleClick2(rule);
+                    }}
+                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                  >
+                    Evaluate
+                  </p>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

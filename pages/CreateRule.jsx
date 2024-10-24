@@ -3,9 +3,15 @@ import { Tree } from "react-d3-tree";
 import { useNavigate } from "react-router-dom";
 import { v4 } from "uuid";
 import { toast } from "react-toastify";
+import Loading from "../components/Loading";
 
 const CreateRule = () => {
   const [name, setName] = useState("");
+
+  const host =
+    import.meta.env.VITE_SERVER_URL || "https://ruleenginebackend-9sxx.onrender.com";
+
+  const [loading, setLoading] = useState(false);
 
   const [valid, setValid] = useState(false);
 
@@ -18,6 +24,7 @@ const CreateRule = () => {
   };
 
   const createRule = async () => {
+    setLoading(true);
     try {
       // Prepare the rule data
       const ruleData = {
@@ -25,7 +32,7 @@ const CreateRule = () => {
         name: name.length > 0 ? name : v4(), // If name is empty, use a generated UUID
       };
 
-      const response = await fetch(`https://ruleenginebackend-9sxx.onrender.com/rule/add-rule`, {
+      const response = await fetch(`${host}/rule/add-rule`, {
         method: "POST", // Use POST method
         headers: {
           "Content-Type": "application/json", // Specify the content type
@@ -50,6 +57,8 @@ const CreateRule = () => {
     } catch (error) {
       toast.error("Some error occurred");
       console.log("Some error occurred", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -464,6 +473,19 @@ const CreateRule = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.classList.add("modal-open"); // Add blur when opening
+    } else {
+      document.body.classList.remove("modal-open"); // Remove blur when closing
+    }
+
+    // Cleanup function to remove blur when component unmounts
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
+  }, [isModalOpen]);
+
   const AddModal = () => {
     const [elementType, setElementType] = useState("DE");
     const [value, setValue] = useState("Default");
@@ -513,77 +535,79 @@ const CreateRule = () => {
     };
 
     return (
-      <div
-        id="crud-modal"
-        tabindex="-1"
-        aria-hidden="true"
-        style={{ position: "absolute", top: "15%", left: "35%" }}
-        className={`${
-          isModalOpen ? "" : "hidden"
-        }  overflow-y-auto overflow-x-hidden z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`}
-      >
-        <div class="relative p-4 w-full max-w-md max-h-full">
-          <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Choose Element
-              </h3>
-              <button
-                type="button"
-                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                data-modal-toggle="crud-modal"
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setNode(undefined);
-                }}
-              >
-                <svg
-                  class="w-3 h-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 14"
+      <>
+        <div className={`modal-overlay ${isModalOpen ? "visible" : ""}`} />
+        <div
+          id="crud-modal"
+          tabindex="-1"
+          aria-hidden="true"
+          style={{ position: "absolute", top: "15%", left: "35%" }}
+          className={`${
+            isModalOpen ? "" : "hidden"
+          }  overflow-y-auto overflow-x-hidden z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`}
+        >
+          <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+              <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  Choose Element
+                </h3>
+                <button
+                  type="button"
+                  class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                  data-modal-toggle="crud-modal"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setNode(undefined);
+                  }}
                 >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                  />
-                </svg>
-                <span class="sr-only">Close modal</span>
-              </button>
-            </div>
+                  <svg
+                    class="w-3 h-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 14"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                    />
+                  </svg>
+                  <span class="sr-only">Close modal</span>
+                </button>
+              </div>
 
-            <form class="p-4 md:p-5">
-              <div class="grid gap-4 mb-4 grid-cols-2">
-                <div class="col-span-2 sm:col-span-1">
-                  <label
-                    for="category"
-                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Type
-                  </label>
-                  <select
-                    id="category"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    onChange={onChangeElementType}
-                  >
-                    <option selected value="DE">
-                      Default
-                    </option>
-                    <option value="OP">Operator (AND,OR, XOR)</option>
-                    <option value="CO">
-                      Comparator (&gt;, &lt;, =,&gt;=, &lt;=)
-                    </option>
-                    <option value="VA">Value</option>
-                    <option value="AT">Attribute</option>
-                    {/* <option value="RL">Rule</option> */}
-                  </select>
-                </div>
-                <div class="col-span-2 sm:col-span-1">
-                  {/* <select
+              <form class="p-4 md:p-5">
+                <div class="grid gap-4 mb-4 grid-cols-2">
+                  <div class="col-span-2 sm:col-span-1">
+                    <label
+                      for="category"
+                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Type
+                    </label>
+                    <select
+                      id="category"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      onChange={onChangeElementType}
+                    >
+                      <option selected value="DE">
+                        Default
+                      </option>
+                      <option value="OP">Operator (AND,OR, XOR)</option>
+                      <option value="CO">
+                        Comparator (&gt;, &lt;, =,&gt;=, &lt;=)
+                      </option>
+                      <option value="VA">Value</option>
+                      <option value="AT">Attribute</option>
+                      {/* <option value="RL">Rule</option> */}
+                    </select>
+                  </div>
+                  <div class="col-span-2 sm:col-span-1">
+                    {/* <select
                     id="category"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   >
@@ -593,50 +617,51 @@ const CreateRule = () => {
                     <option value="GA">Gaming/Console</option>
                     <option value="PH">Phones</option>
                   </select> */}
-                  {elementType === "OP" && (
-                    <OperatorInput setValue={setValue} />
-                  )}
-                  {elementType === "AT" && (
-                    <AttributeInput setValue={setValue} />
-                  )}
-                  {elementType === "CO" && (
-                    <ComparatorInput setValue={setValue} />
-                  )}
-                  {elementType === "VA" && <ValueInput setValue={setValue} />}
-                  {/* {elementType === "RL" && <RuleInput setValue={setValue} />} */}
-                  {(elementType === "DE" || elementType === "") && (
-                    <DefaultVal setValue={setValue} />
-                  )}
+                    {elementType === "OP" && (
+                      <OperatorInput setValue={setValue} />
+                    )}
+                    {elementType === "AT" && (
+                      <AttributeInput setValue={setValue} />
+                    )}
+                    {elementType === "CO" && (
+                      <ComparatorInput setValue={setValue} />
+                    )}
+                    {elementType === "VA" && <ValueInput setValue={setValue} />}
+                    {/* {elementType === "RL" && <RuleInput setValue={setValue} />} */}
+                    {(elementType === "DE" || elementType === "") && (
+                      <DefaultVal setValue={setValue} />
+                    )}
+                  </div>
                 </div>
-              </div>
-              <button
-                type="submit"
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log(e);
-                  handleSubmit();
-                  setIsModalOpen(false);
-                }}
-                class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                <svg
-                  class="me-1 -ms-1 w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
+                <button
+                  type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log(e);
+                    handleSubmit();
+                    setIsModalOpen(false);
+                  }}
+                  class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
-                Add Element
-              </button>
-            </form>
+                  <svg
+                    class="me-1 -ms-1 w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                  Add Element
+                </button>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   };
 
@@ -800,120 +825,123 @@ const CreateRule = () => {
     function validateRuleString(rule) {
       if (!rule || !rule.trim()) return false;
       rule = rule.trim();
-      
-      if (!rule.startsWith('(') || !rule.endsWith(')')) return false;
-  
+
+      if (!rule.startsWith("(") || !rule.endsWith(")")) return false;
+
       function tokenize(str) {
-          const tokens = [];
-          let current = '';
-          let inQuote = false;
-          
-          for (let i = 0; i < str.length; i++) {
-              const char = str[i];
-              
-              if (char === "'" && str[i - 1] !== '\\') {
-                  inQuote = !inQuote;
-                  current += char;
-                  continue;
-              }
-              
-              if (inQuote) {
-                  current += char;
-                  continue;
-              }
-              
-              if (char === ' ') {
-                  if (current) tokens.push(current);
-                  current = '';
-                  continue;
-              }
-              
-              if (char === '(' || char === ')') {
-                  if (current) tokens.push(current);
-                  tokens.push(char);
-                  current = '';
-                  continue;
-              }
-              
-              current += char;
+        const tokens = [];
+        let current = "";
+        let inQuote = false;
+
+        for (let i = 0; i < str.length; i++) {
+          const char = str[i];
+
+          if (char === "'" && str[i - 1] !== "\\") {
+            inQuote = !inQuote;
+            current += char;
+            continue;
           }
-          
-          if (current) tokens.push(current);
-          return tokens;
+
+          if (inQuote) {
+            current += char;
+            continue;
+          }
+
+          if (char === " ") {
+            if (current) tokens.push(current);
+            current = "";
+            continue;
+          }
+
+          if (char === "(" || char === ")") {
+            if (current) tokens.push(current);
+            tokens.push(char);
+            current = "";
+            continue;
+          }
+
+          current += char;
+        }
+
+        if (current) tokens.push(current);
+        return tokens;
       }
-  
+
       function isValidComparison(tokens, startIndex) {
-          // Need at least 3 tokens for a valid comparison (attribute, operator, value)
-          if (startIndex + 2 >= tokens.length) return { valid: false };
-          
-          const attribute = tokens[startIndex];
-          const operator = tokens[startIndex + 1];
-          const value = tokens[startIndex + 2];
-  
-          // Check if attribute contains only valid characters
-          if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(attribute)) return { valid: false };
-          
-          // Check if operator is valid
-          if (!['>', '<', '=', '>=', '<=', '!='].includes(operator)) return { valid: false };
-          
-          // For = and !=, value must be quoted if not a number
-          if ((operator === '=' || operator === '!=')) {
-              if (!value.startsWith("'") && isNaN(value)) return { valid: false };
-          }
-          
-          // For other operators, value must be numeric
-          if (['>', '<', '>=', '<='].includes(operator) && isNaN(value)) return { valid: false };
-  
-          return { valid: true, tokensUsed: 3 };
+        // Need at least 3 tokens for a valid comparison (attribute, operator, value)
+        if (startIndex + 2 >= tokens.length) return { valid: false };
+
+        const attribute = tokens[startIndex];
+        const operator = tokens[startIndex + 1];
+        const value = tokens[startIndex + 2];
+
+        // Check if attribute contains only valid characters
+        if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(attribute)) return { valid: false };
+
+        // Check if operator is valid
+        if (![">", "<", "=", ">=", "<=", "!="].includes(operator))
+          return { valid: false };
+
+        // For = and !=, value must be quoted if not a number
+        if (operator === "=" || operator === "!=") {
+          if (!value.startsWith("'") && isNaN(value)) return { valid: false };
+        }
+
+        // For other operators, value must be numeric
+        if ([">", "<", ">=", "<="].includes(operator) && isNaN(value))
+          return { valid: false };
+
+        return { valid: true, tokensUsed: 3 };
       }
-  
+
       function validateStructure(tokens) {
-          let stack = [];
-          let i = 0;
-          
-          while (i < tokens.length) {
-              const token = tokens[i];
-  
-              if (token === '(') {
-                  stack.push(token);
-                  i++;
-                  continue;
-              }
-              
-              if (token === ')') {
-                  if (stack.length === 0) return false;
-                  stack.pop();
-                  i++;
-                  continue;
-              }
-  
-              if (['AND', 'OR', 'XOR'].includes(token)) {
-                  i++;
-                  continue;
-              }
-  
-              // At this point, we should be at the start of a comparison
-              // and inside parentheses
-              if (stack.length === 0) return false;
-              
-              const comparisonResult = isValidComparison(tokens, i);
-              if (!comparisonResult.valid) return false;
-              
-              i += comparisonResult.tokensUsed;
+        let stack = [];
+        let i = 0;
+
+        while (i < tokens.length) {
+          const token = tokens[i];
+
+          if (token === "(") {
+            stack.push(token);
+            i++;
+            continue;
           }
-  
-          return stack.length === 0;
+
+          if (token === ")") {
+            if (stack.length === 0) return false;
+            stack.pop();
+            i++;
+            continue;
+          }
+
+          if (["AND", "OR", "XOR"].includes(token)) {
+            i++;
+            continue;
+          }
+
+          // At this point, we should be at the start of a comparison
+          // and inside parentheses
+          if (stack.length === 0) return false;
+
+          const comparisonResult = isValidComparison(tokens, i);
+          if (!comparisonResult.valid) return false;
+
+          i += comparisonResult.tokensUsed;
+        }
+
+        return stack.length === 0;
       }
-  
+
       try {
-          const tokens = tokenize(rule);
-          return validateStructure(tokens);
+        const tokens = tokenize(rule);
+        return validateStructure(tokens);
       } catch {
-          return false;
+        return false;
       }
-  }
+    }
 
     const createRuleString = async () => {
+      setLoading(true);
       try {
         // Prepare the rule data
         const ruleData = {
@@ -921,7 +949,7 @@ const CreateRule = () => {
           name: name.length > 0 ? name : v4(), // If name is empty, use a generated UUID
         };
 
-        const response = await fetch(`https://ruleenginebackend-9sxx.onrender.com/rule/add-rule`, {
+        const response = await fetch(`${host}/rule/add-rule`, {
           method: "POST", // Use POST method
           headers: {
             "Content-Type": "application/json", // Specify the content type
@@ -946,6 +974,8 @@ const CreateRule = () => {
         toast.error("Some error occured");
 
         console.log("Some error occurred", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -996,6 +1026,10 @@ const CreateRule = () => {
       </>
     );
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="flex flex-col w-full items-center justify-center">

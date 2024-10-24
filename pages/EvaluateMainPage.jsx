@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RuleContext } from "../context/rules";
+import Loading from "../components/Loading";
 const data = [
   {
     name: "testRule1",
@@ -21,6 +22,7 @@ const data = [
 ];
 
 const EvaluateMainPage = () => {
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const goBack = () => {
@@ -51,15 +53,21 @@ const EvaluateMainPage = () => {
   };
 
   const [ruleData, setRuleData] = useState(data);
+  const host = import.meta.env.VITE_SERVER_URL || "https://ruleenginebackend-9sxx.onrender.com";
+
 
   const fetchRules = async () => {
+    setLoading(true);
     try {
-      const response = await fetch("https://ruleenginebackend-9sxx.onrender.com/rule/allRules", {
-        method: "GET", // Use GET method
-        headers: {
-          Accept: "application/json", // Set the Accept header
-        },
-      });
+      const response = await fetch(
+        `${host}/rule/allRules`,
+        {
+          method: "GET", // Use GET method
+          headers: {
+            Accept: "application/json", // Set the Accept header
+          },
+        }
+      );
       console.log(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -69,12 +77,18 @@ const EvaluateMainPage = () => {
       setRuleData(data.nodes);
     } catch (error) {
       console.log("Some Error occured", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchRules();
   }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div>
